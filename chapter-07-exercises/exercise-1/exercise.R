@@ -2,14 +2,14 @@
 
 # Create a vector `names` that contains your name and the names of 2 people 
 # next to you. Print the vector.
-names <- c("Joel", "Mike", "Dave")
+names <- c('Shourya', 'Sumant', 'Rishi')
 print(names)
 
 # Use the colon operator : to create a vector `n` of numbers from 10:49
 n <- 10:49
 
 # Use the `length()` function to get the number of elements in `n`
-length(n)
+num <- length(n)
 
 # Add 1 to each element in `n` and print the result
 print(n + 1)
@@ -19,8 +19,8 @@ print(n + 1)
 m <- seq(10, 1)
 
 # Subtract `m` FROM `n`. Note the recycling!
-n_less_m <- n - m
-print(n_less_m)
+subtracted <- n - m
+print(subtracted)
 
 # Use the `seq()` function to produce a range of numbers from -5 to 10 in `0.1`
 # increments. Store it in a variable `x_range`

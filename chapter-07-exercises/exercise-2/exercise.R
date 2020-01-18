@@ -18,14 +18,13 @@ eleventh <- all_numbers[11]
 # of `all_numbers`
 some_numbers <- all_numbers[2:5]
 
-
 # Create a vector `even` that holds the even numbers from 1 to 100
-even <- seq(2, 100, 2)  # start at first even number!
+even <- 1:100
+even <- even[even %% 2 == 0]
 
 # Using the `all()` function and `%%` (modulo) operator, confirm that all of the
 # numbers in your `even` vector are even
-test <- all(even %% 2 == 0)
-
+all(even %% 2 == 0)
 
 # Create a vector `phone_numbers` that contains the numbers 8, 6, 7, 5, 3, 0, 9
 phone_numbers <- c(8, 6, 7, 5, 3, 0, 9)
@@ -39,10 +38,10 @@ small <- phone_numbers[phone_numbers <= 5]
 
 # Create a vector `large` that has the values of `phone_numbers` that are 
 # strictly greater than 5
-large <- phone_numbers[phone_numbers > 5]
+large <- phone_numbers[phone_numbers >= 5]
 
-# Replace the values in `phone_numbers` that are larger than 5 with the number 5
+# Replace the valuhes in `phone_numbers` that are larger than 5 with the number 5
 phone_numbers[phone_numbers > 5] <- 5
 
 # Replace every odd-numbered value in `phone_numbers` with the number 0
-phone_numbers[phone_numbers %% 2 == 1] <- 0
+phone_numbers[phone_numbers %%2 == 1] <- 0

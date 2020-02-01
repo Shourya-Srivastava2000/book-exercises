@@ -1,73 +1,55 @@
-# Exercise 2: working with data frames
+# Exercise 4: practicing with dplyr
 
-# Create a vector of 100 employees ("Employee 1", "Employee 2", ... "Employee 100")
-# Hint: use the `paste()` function and vector recycling to add a number to the word
-# "Employee"
+# Install the `"nycflights13"` package. Load (`library()`) the package.
+# You'll also need to load `dplyr`
+install.packages("nycflights13")
+library(nycflights13)
+library(dplyr)
 
-employees <- paste("Employee", 1:100)
+# The data frame `flights` should now be accessible to you.
+# Use functions to inspect it: how many rows and columns does it have?
+# What are the names of the columns?
+# Use `??flights` to search for documentation on the data set (for what the
+# columns represent)
+nrow(flights)
+ncol(flights)
+colnames(flights)
+?flights
 
-# Create a vector of 100 random salaries for the year 2017
-# Use the `runif()` function to pick random numbers between 40000 and 50000
-salaries_for_2017 <- runif(100, 40000, 50000)
+# Use `dplyr` to give the data frame a new column that is the amount of time
+# gained or lost while flying (that is: how much of the delay arriving occured
+# during flight, as opposed to before departing).
+flights <- mutate(flights, gain_in_air = arr_delay - dep_delay)
 
-# Create a vector of 100 annual salary adjustments between -5000 and 10000.
-# (A negative number represents a salary decrease due to corporate greed)
-# Again use the `runif()` function to pick 100 random numbers in that range.
+# Use `dplyr` to sort your data frame in descending order by the column you just
+# created. Remember to save this as a variable (or in the same one!)
+flights <- arrange(flights, desc(gain_in_air))
+View(head(flights))
 
-annual_salary_adjustments <- runif(100, -5000, 10000)
-# Create a data frame `salaries` by combining the 3 vectors you just made
-# Remember to set `stringsAsFactors=FALSE`!
+# For practice, repeat the last 2 steps in a single statement using the pipe
+# operator. You can clear your environmental variables to "reset" the data frame
+flights <- flights %>% mutate(gain_in_air = arr_delay - dep_delay) %>% arrange(desc(gain_in_air))
 
-salaries <- data.frame(employees, salaries_2017, salary_adjustments, stringsAsFactors = FALSE)
+# Make a histogram of the amount of time gained using the `hist()` function
+hist(flights$gain_in_air)
 
-# Add a column to the `salaries` data frame that represents each person's
-# salary in 2018 (e.g., with the salary adjustment added in).
+# On average, did flights gain or lose time?
+# Note: use the `na.rm = TRUE` argument to remove NA values from your aggregation
+mean(flights$gain_in_air, na.rm = TRUE) # Gained 5 minutes!
 
-salaries$salaries_2018 <- salaries$salaries_for_2017 + salaries$annual_salary_adjustments
+# Create a data.frame of flights headed to SeaTac ('SEA'), only including the
+# origin, destination, and the "gain_in_air" column you just created
+to_sea <- flights %>% select(origin, dest, gain_in_air) %>% filter(dest == "SEA")
 
-# Add a column to the `salaries` data frame that has a value of `TRUE` if the 
-# person got a raise (their salary went up)
-salaries$got_raise <- salaries$salaries_2018 > salaries$salaries_2017
+# On average, did flights to SeaTac gain or loose time?
+mean(to_sea$gain_in_air, na.rm = TRUE) # Gained 11 minutes!
 
-
-### Retrieve values from your data frame to answer the following questions
-### Note that you should get the value as specific as possible (e.g., a single
-### cell rather than the whole row!)
-
-# What was the 2018 salary of Employee 57
-salary_57 <- salaries[salaries$employees == "Employee 57", "salaries_2018"]
-
-# How many employees got a raise?
-nrow(salaries[salaries$got_raise == TRUE, ])
-
-# What was the dollar value of the highest raise?
-highest_raise <- max(salaries$annual_salary_adjustments)
-
-
-# What was the "name" of the employee who received the highest raise?
-
-got_biggest_raise <- salaries[salaries$annual_salary_adjustments == highest_raise, "employees"]
-
-# What was the largest decrease in salaries between the two years?
-
-biggest_paycut <- min(salaries$annual_salary_adjustments)
-
-# What was the name of the employee who recieved largest decrease in salary?
-got_biggest_paycut <- salaries[salaries$annual_salary_adjustments == biggest_paycut, "employees"]
-
-
-# What was the average salary change?
-
-avg_increase <- mean(salaries$annual_salary_adjustments)
-
-# For people who did not get a raise, how much money did they lose on average?
-
-avg_loss <- mean(salaries$annual_salary_adjustments[salaries$got_raise == FALSE])
-
-## Consider: do the above averages match what you expected them to be based on 
-## how you generated the salaries?
-
-
-# Write a .csv file of your salary data to your working directory
-
-write.csv(salaries, "salaries.csv")
+# Consider flights from JFK to SEA. What was the average, min, and max air time
+# of those flights? Bonus: use pipes to answer this question in one statement
+# (without showing any other data)!
+filter(flights, origin == "JFK", dest == "SEA") %>%
+  summarize(
+    avg_air_time = mean(air_time, na.rm = TRUE),
+    max_air_time = max(air_time, na.rm = TRUE),
+    min_air_time = min(air_time, na.rm = TRUE)
+  )

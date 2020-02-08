@@ -1,55 +1,61 @@
-# Exercise 4: practicing with dplyr
+# Exercise 1: reading and querying a web API
 
-# Install the `"nycflights13"` package. Load (`library()`) the package.
-# You'll also need to load `dplyr`
-install.packages("nycflights13")
-library(nycflights13)
-library(dplyr)
+# Load the httr and jsonlite libraries for accessing data
+# You can also load `dplyr` if you wish to use it
+library("httr")
+library("jsonlite")
+library("dplyr")
 
-# The data frame `flights` should now be accessible to you.
-# Use functions to inspect it: how many rows and columns does it have?
-# What are the names of the columns?
-# Use `??flights` to search for documentation on the data set (for what the
-# columns represent)
-nrow(flights)
-ncol(flights)
-colnames(flights)
-?flights
+# Create a variable base_uri that stores the base URI (as a string) for the 
+# Github API (https://api.github.com)
+base_uri <- "https://api.github.com"
 
-# Use `dplyr` to give the data frame a new column that is the amount of time
-# gained or lost while flying (that is: how much of the delay arriving occured
-# during flight, as opposed to before departing).
-flights <- mutate(flights, gain_in_air = arr_delay - dep_delay)
+# Under the "Repositories" category of the API documentation, find the endpoint 
+# that will list _repos in an organization_. Then create a variable named
+# `org_resource` that stores the endpoint for the `programming-for-data-science`
+# organization repos (this is the _path_ to the resource of interest).
+org_resource <- "/orgs/programming-for-data-science/repos"
 
-# Use `dplyr` to sort your data frame in descending order by the column you just
-# created. Remember to save this as a variable (or in the same one!)
-flights <- arrange(flights, desc(gain_in_air))
-View(head(flights))
+# Send a GET request to this endpoint (the `base_uri` followed by the 
+# `org_resource` path). Print the response to show that your request worked. 
+# (The listed URI will also allow you to inspect the JSON in the browser easily).
+response <- GET(paste0(base_uri, org_resource))
+print(response)
 
-# For practice, repeat the last 2 steps in a single statement using the pipe
-# operator. You can clear your environmental variables to "reset" the data frame
-flights <- flights %>% mutate(gain_in_air = arr_delay - dep_delay) %>% arrange(desc(gain_in_air))
+# Extract the content of the response using the `content()` function, saving it
+# in a variable.
+response_text <- content(response, "text")
 
-# Make a histogram of the amount of time gained using the `hist()` function
-hist(flights$gain_in_air)
+# Convert the content variable from a JSON string into a data frame.
+org_repos <- fromJSON(response_text)
 
-# On average, did flights gain or lose time?
-# Note: use the `na.rm = TRUE` argument to remove NA values from your aggregation
-mean(flights$gain_in_air, na.rm = TRUE) # Gained 5 minutes!
+# How many (public) repositories does the organization have?
+print(nrow(org_repos))
 
-# Create a data.frame of flights headed to SeaTac ('SEA'), only including the
-# origin, destination, and the "gain_in_air" column you just created
-to_sea <- flights %>% select(origin, dest, gain_in_air) %>% filter(dest == "SEA")
+# Now a second query:
+# Create a variable `search_endpoint` that stores the endpoint used to search 
+# for repositories. (Hint: look for a "Search" endpoint in the documentation).
+search_endpoint <- "/search/repositories"
 
-# On average, did flights to SeaTac gain or loose time?
-mean(to_sea$gain_in_air, na.rm = TRUE) # Gained 11 minutes!
+# Search queries require a query parameter (for what to search for). Create a 
+# `query_params` list variable that specifies an appropriate key and value for 
+# the search term
+query_params <- list(q = "graphics")
 
-# Consider flights from JFK to SEA. What was the average, min, and max air time
-# of those flights? Bonus: use pipes to answer this question in one statement
-# (without showing any other data)!
-filter(flights, origin == "JFK", dest == "SEA") %>%
-  summarize(
-    avg_air_time = mean(air_time, na.rm = TRUE),
-    max_air_time = max(air_time, na.rm = TRUE),
-    min_air_time = min(air_time, na.rm = TRUE)
-  )
+# Send a GET request to the `search_endpoint`--including your params list as the
+# `query`. Print the response to show that your request worked.
+response <- GET(paste0(base_uri, search_endpoint), query = query_params)
+print(response)
+
+# Extract the content of the response and convert it from a JSON string into a
+# data frame. 
+response_text <- content(response, "text")
+graphics_repos = fromJSON(response_text)
+
+# How many search repos did your search find? (Hint: check the list names to 
+# find an appropriate value).
+print(graphics_repos$total_count)
+
+# What are the full names of the top 5 repos in the search results?
+graphics_repo_names <- graphics_repos$items$full_name[1:5]
+print(graphics_repo_names)
